@@ -1,0 +1,421 @@
+{
+  "captured_at": "20261118-190852",
+  "mode": "pc_separate",
+  "mode_label": "PC position, pedals separate (red LED)",
+  "device": {
+    "vendor_id": 1103,
+    "product_id": 46677,
+    "product": "FGT Rumble 3-in-1",
+    "usage_page": 1,
+    "usage": 5
+  },
+  "report_length": 19,
+  "baseline": "00 e0 ff 01 ff ff 80 00 00 00 00 00 00 00 00 00 00 00 00",
+  "steps": [
+    {
+      "index": 1,
+      "name": "steer_left",
+      "label": "turn the wheel fully LEFT",
+      "kind": "axis",
+      "frame": "00 e0 ff 7c ff ff 80 00 00 00 00 00 00 00 00 00 00 00 00",
+      "changes": [
+        {
+          "offset": 3,
+          "base": 1,
+          "value": 124,
+          "xor": 125
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "steer_right",
+      "label": "turn the wheel fully RIGHT",
+      "kind": "axis",
+      "frame": "00 e0 ff ff ff ff 80 00 00 00 00 00 00 00 00 00 00 00 00",
+      "changes": [
+        {
+          "offset": 3,
+          "base": 1,
+          "value": 255,
+          "xor": 254
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "name": "throttle",
+      "label": "press the THROTTLE pedal down fully",
+      "kind": "axis",
+      "frame": "00 e0 ff 81 ff 00 80 00 00 00 00 00 00 00 00 00 00 00 00",
+      "changes": [
+        {
+          "offset": 3,
+          "base": 1,
+          "value": 129,
+          "xor": 128
+        },
+        {
+          "offset": 5,
+          "base": 255,
+          "value": 0,
+          "xor": 255
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "name": "brake",
+      "label": "press the BRAKE pedal down fully",
+      "kind": "axis",
+      "frame": "00 e0 ff 83 ff 00 80 00 00 00 00 00 00 00 00 00 00 00 00",
+      "changes": [
+        {
+          "offset": 3,
+          "base": 1,
+          "value": 131,
+          "xor": 130
+        },
+        {
+          "offset": 5,
+          "base": 255,
+          "value": 0,
+          "xor": 255
+        }
+      ]
+    },
+    {
+      "index": 5,
+      "name": "button_1",
+      "label": "press action button 1",
+      "kind": "button",
+      "frame": "01 e0 ff 81 ff ff 80 00 00 00 00 00 00 00 ff 00 00 00 00",
+      "changes": [
+        {
+          "offset": 0,
+          "base": 0,
+          "value": 1,
+          "xor": 1
+        },
+        {
+          "offset": 3,
+          "base": 1,
+          "value": 129,
+          "xor": 128
+        },
+        {
+          "offset": 14,
+          "base": 0,
+          "value": 255,
+          "xor": 255
+        }
+      ]
+    },
+    {
+      "index": 6,
+      "name": "button_2",
+      "label": "press action button 2",
+      "kind": "button",
+      "frame": "02 e0 ff 80 ff ff 80 00 00 00 00 00 00 ff 00 00 00 00 00",
+      "changes": [
+        {
+          "offset": 0,
+          "base": 0,
+          "value": 2,
+          "xor": 2
+        },
+        {
+          "offset": 3,
+          "base": 1,
+          "value": 128,
+          "xor": 129
+        },
+        {
+          "offset": 13,
+          "base": 0,
+          "value": 255,
+          "xor": 255
+        }
+      ]
+    },
+    {
+      "index": 7,
+      "name": "button_3",
+      "label": "press action button 3",
+      "kind": "button",
+      "frame": "04 e0 ff 80 ff ff 80 00 00 00 00 00 ff 00 00 00 00 00 00",
+      "changes": [
+        {
+          "offset": 0,
+          "base": 0,
+          "value": 4,
+          "xor": 4
+        },
+        {
+          "offset": 3,
+          "base": 1,
+          "value": 128,
+          "xor": 129
+        },
+        {
+          "offset": 12,
+          "base": 0,
+          "value": 255,
+          "xor": 255
+        }
+      ]
+    },
+    {
+      "index": 8,
+      "name": "button_4",
+      "label": "press action button 4",
+      "kind": "button",
+      "frame": "08 e0 ff 80 ff ff 80 00 00 00 00 ff 00 00 00 00 00 00 00",
+      "changes": [
+        {
+          "offset": 0,
+          "base": 0,
+          "value": 8,
+          "xor": 8
+        },
+        {
+          "offset": 3,
+          "base": 1,
+          "value": 128,
+          "xor": 129
+        },
+        {
+          "offset": 11,
+          "base": 0,
+          "value": 255,
+          "xor": 255
+        }
+      ]
+    },
+    {
+      "index": 9,
+      "name": "paddle_up",
+      "label": "pull the UP paddle",
+      "kind": "button",
+      "frame": "20 e0 ff 80 ff ff 80 00 00 00 00 00 00 00 00 00 ff 00 00",
+      "changes": [
+        {
+          "offset": 0,
+          "base": 0,
+          "value": 32,
+          "xor": 32
+        },
+        {
+          "offset": 3,
+          "base": 1,
+          "value": 128,
+          "xor": 129
+        },
+        {
+          "offset": 16,
+          "base": 0,
+          "value": 255,
+          "xor": 255
+        }
+      ]
+    },
+    {
+      "index": 10,
+      "name": "paddle_down",
+      "label": "pull the DOWN paddle",
+      "kind": "button",
+      "frame": "10 e0 ff 80 ff ff 80 00 00 00 00 00 00 00 00 ff 00 00 00",
+      "changes": [
+        {
+          "offset": 0,
+          "base": 0,
+          "value": 16,
+          "xor": 16
+        },
+        {
+          "offset": 3,
+          "base": 1,
+          "value": 128,
+          "xor": 129
+        },
+        {
+          "offset": 15,
+          "base": 0,
+          "value": 255,
+          "xor": 255
+        }
+      ]
+    },
+    {
+      "index": 11,
+      "name": "dpad_up",
+      "label": "press D-pad UP",
+      "kind": "button",
+      "frame": "00 e0 00 80 ff ff 80 00 00 ff 00 00 00 00 00 00 00 00 00",
+      "changes": [
+        {
+          "offset": 2,
+          "base": 255,
+          "value": 0,
+          "xor": 255
+        },
+        {
+          "offset": 3,
+          "base": 1,
+          "value": 128,
+          "xor": 129
+        },
+        {
+          "offset": 9,
+          "base": 0,
+          "value": 255,
+          "xor": 255
+        }
+      ]
+    },
+    {
+      "index": 12,
+      "name": "dpad_down",
+      "label": "press D-pad DOWN",
+      "kind": "button",
+      "frame": "00 e0 04 80 ff ff 80 00 00 00 ff 00 00 00 00 00 00 00 00",
+      "changes": [
+        {
+          "offset": 2,
+          "base": 255,
+          "value": 4,
+          "xor": 251
+        },
+        {
+          "offset": 3,
+          "base": 1,
+          "value": 128,
+          "xor": 129
+        },
+        {
+          "offset": 10,
+          "base": 0,
+          "value": 255,
+          "xor": 255
+        }
+      ]
+    },
+    {
+      "index": 13,
+      "name": "dpad_left",
+      "label": "press D-pad LEFT",
+      "kind": "button",
+      "frame": "00 e0 06 80 ff ff 80 00 ff 00 00 00 00 00 00 00 00 00 00",
+      "changes": [
+        {
+          "offset": 2,
+          "base": 255,
+          "value": 6,
+          "xor": 249
+        },
+        {
+          "offset": 3,
+          "base": 1,
+          "value": 128,
+          "xor": 129
+        },
+        {
+          "offset": 8,
+          "base": 0,
+          "value": 255,
+          "xor": 255
+        }
+      ]
+    },
+    {
+      "index": 14,
+      "name": "dpad_right",
+      "label": "press D-pad RIGHT",
+      "kind": "button",
+      "frame": "00 e0 02 80 ff ff 80 ff 00 00 00 00 00 00 00 00 00 00 00",
+      "changes": [
+        {
+          "offset": 2,
+          "base": 255,
+          "value": 2,
+          "xor": 253
+        },
+        {
+          "offset": 3,
+          "base": 1,
+          "value": 128,
+          "xor": 129
+        },
+        {
+          "offset": 7,
+          "base": 0,
+          "value": 255,
+          "xor": 255
+        }
+      ]
+    },
+    {
+      "index": 15,
+      "name": "se",
+      "label": "press the SE button",
+      "kind": "button",
+      "frame": "00 e1 ff 80 ff ff 80 00 00 00 00 00 00 00 00 00 00 00 00",
+      "changes": [
+        {
+          "offset": 1,
+          "base": 224,
+          "value": 225,
+          "xor": 1
+        },
+        {
+          "offset": 3,
+          "base": 1,
+          "value": 128,
+          "xor": 129
+        }
+      ]
+    },
+    {
+      "index": 16,
+      "name": "st",
+      "label": "press the ST button",
+      "kind": "button",
+      "frame": "00 e2 ff 80 ff ff 80 00 00 00 00 00 00 00 00 00 00 00 00",
+      "changes": [
+        {
+          "offset": 1,
+          "base": 224,
+          "value": 226,
+          "xor": 2
+        },
+        {
+          "offset": 3,
+          "base": 1,
+          "value": 128,
+          "xor": 129
+        }
+      ]
+    },
+    {
+      "index": 17,
+      "name": "home",
+      "label": "press the HOME button",
+      "kind": "button",
+      "frame": "00 f0 ff 80 ff ff 80 00 00 00 00 00 00 00 00 00 00 00 00",
+      "changes": [
+        {
+          "offset": 1,
+          "base": 224,
+          "value": 240,
+          "xor": 16
+        },
+        {
+          "offset": 3,
+          "base": 1,
+          "value": 128,
+          "xor": 129
+        }
+      ]
+    }
+  ]
+}
