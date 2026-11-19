@@ -96,18 +96,17 @@ The wheel speaks a Thrustmaster vendor protocol, not standard HID.
 
 ## Mode differences
 
-| mode | PC byte 4 | PC byte 5 | steering |
-|------|-----------|-----------|----------|
-| PS3, pedals separate | brake | throttle | byte 3 |
-| PC, pedals combined | unused, stays `0xFF` | combined pedals | byte 3 |
+Pedal reporting depends on the pedal-mode toggle (previous section), not on
+the switch position. The switch position only selects the USB identity and
+report size:
 
-The PS3 capture gives brake on byte 4 and throttle on byte 5, independently. The
-PC capture drove byte 5 for both pedals, so that run was in combined mode even
-though the wizard asked for separate. Console use targets PC mode.
+| switch | PID | report | brake / throttle bytes |
+|--------|-----|--------|------------------------|
+| PS3 | `0xB658` | 27 bytes, vendor control read | byte 4 / byte 5 (dead on the console in every capture) |
+| PC | `0xB655` | 19 bytes, interrupt endpoint | byte 4 / byte 5, live after the toggle |
 
-The combined/separate difference is the pedal-mode toggle described above, not
-a property of the switch position: either switch position can sit in either
-pedal mode.
+Console use targets the PC position: it is the only one where the interrupt
+endpoint answers and the pedals report.
 
 ## Analog pedal mode (pedal-mode toggle)
 
@@ -115,20 +114,22 @@ The wheel has two pedal modes, toggled by a physical combo documented in the
 official manual:
 
 > Simultaneously press and release **both pedals + the HOME button**.
-> LED **red = separate** (independent axes), **green = combined**.
 
-- **Separate mode (red LED)**: brake on byte 4 (`0xFF` released, `0x00`
-  pressed), throttle on byte 5, full analog travel. This is the mode the
-  plugin expects.
-- **Combined mode (green LED)**: brake is absent from byte 4 (stays `0xFF`)
-  and only the combined axis moves. On the console the wheel was in this
-  mode for every early capture, which is why the brake looked dead while
-  the throttle worked.
+The manual calls red "separate" and green "combined", but on the console the
+measurement is what matters:
+
+- **Red LED (power-on default)**: brake byte 4 stays `0xFF` and never moves.
+  Only the throttle (byte 5) is live. Every early console capture sat here,
+  which is why the brake looked dead while the throttle worked.
+- **Green LED (after the toggle)**: brake byte 4 ramps through its full
+  range (`0xFF` released, `0x00` pressed) and throttle byte 5 works as
+  before. **This is the working configuration**, verified live on the
+  console with slow and quick presses of both pedals.
 
 On the console use **PC switch position** so the interrupt endpoint answers
-(`044F:0xB655`), and do the toggle once per power-up if the brake byte stays
-`0xFF`. Verified live on the console: after the toggle, byte 4 ramps through
-its full range and the game receives analog L2/R2.
+(`044F:0xB655`), and do the toggle once if the brake byte stays `0xFF`.
+A PC host shows byte 4 live even in red mode, so do not use the PC as a
+reference for which mode the console needs.
 
 - Pedals are inverted on the PC: `0xFF` means released. On the console the
   released value is `0x80`.
@@ -139,5 +140,5 @@ its full range and the game receives analog L2/R2.
 - Buttons 9 and 10 (byte 1 bits 2 and 3) never changed. Unknown, probably absent
   on this wheel.
 - The console captures now separate the two pedals: in PC mode with the
-  wheel in separate pedal mode, byte 4 is brake and byte 5 is throttle,
+  wheel in green pedal mode, byte 4 is brake and byte 5 is throttle,
   both verified by slow and quick presses.
