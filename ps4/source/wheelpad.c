@@ -31,7 +31,7 @@
 attr_public const char *g_pluginName = "wheelpad";
 attr_public const char *g_pluginDesc = "Thrustmaster wheel to pad";
 attr_public const char *g_pluginAuth = "volante";
-attr_public uint32_t g_pluginVersion = 0x00000300; /* 3.00, analog pedals over the interrupt endpoint */
+attr_public uint32_t g_pluginVersion = 0x00030001; /* 3.0.1, load notification */
 
 /* The mapping layer repeats these numbers so host tests need no Orbis
  * headers. If one ever drifts, the build stops here instead of the game. */
@@ -58,6 +58,26 @@ HOOK_INIT(scePadReadState);
         printf(__VA_ARGS__); \
         fflush(stdout);      \
     } while (0)
+
+/*
+ * System notification, the same banner GoldHEN itself shows. The request
+ * goes through libkernel, which is always loaded, so no extra PRX and no
+ * symbol resolution is needed.
+ */
+static void notify(const char *text)
+{
+    OrbisNotificationRequest request;
+
+    memset(&request, 0, sizeof(request));
+    request.type = NotificationRequest;
+    request.unk3 = 0;
+    request.useIconImageUri = 1;
+    request.targetId = -1;
+    snprintf(request.message, sizeof(request.message), "%s", text);
+    snprintf(request.iconUri, sizeof(request.iconUri), "%s",
+             "cxml://psnotification/tex_icon_system");
+    sceKernelSendNotificationRequest(0, &request, sizeof(request), 0);
+}
 
 static int g_logged_live = 0;
 static int g_logged_hook = 0;
@@ -254,6 +274,17 @@ int32_t attr_public plugin_load(int32_t argc, const char *argv[])
     }
 
     STEP("[wheelpad] ready\n");
+    {
+        char message[64];
+
+        /* The banner text is derived from the version constant so the two
+         * cannot drift apart. */
+        snprintf(message, sizeof(message), "wheelpad v%u.%u.%u loaded",
+                 (unsigned)(g_pluginVersion >> 16),
+                 (unsigned)((g_pluginVersion >> 8) & 0xFFu),
+                 (unsigned)(g_pluginVersion & 0xFFu));
+        notify(message);
+    }
     return 0;
 }
 

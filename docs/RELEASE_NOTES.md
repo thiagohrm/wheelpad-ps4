@@ -1,5 +1,14 @@
 # Release notes
 
+## v3.0.1 — load notification
+
+The plugin now shows the system banner on load, the same style GoldHEN
+itself uses: **"wheelpad v3.0.1 loaded"**. The text is derived from the
+version constant, so the two cannot drift apart.
+
+Artifact: `build/release/wheelpad-v3.0.1.zip` containing `wheelpad.prx`,
+md5 `d04b89b654244c9304f1ed02adf62ca4`.
+
 ## v3.0.0 — analog pedals, verified on track
 
 First fully working release. Everything the wheel has is delivered to the
