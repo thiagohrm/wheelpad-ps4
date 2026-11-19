@@ -115,21 +115,21 @@ official manual:
 
 > Simultaneously press and release **both pedals + the HOME button**.
 
-The manual calls red "separate" and green "combined", but on the console the
-measurement is what matters:
+The manual calls red "separate" and green "combined". What matters is the
+observable state in game, not the LED:
 
-- **Red LED (power-on default)**: brake byte 4 stays `0xFF` and never moves.
-  Only the throttle (byte 5) is live. Every early console capture sat here,
-  which is why the brake looked dead while the throttle worked.
-- **Green LED (after the toggle)**: brake byte 4 ramps through its full
-  range (`0xFF` released, `0x00` pressed) and throttle byte 5 works as
-  before. **This is the working configuration**, verified live on the
-  console with slow and quick presses of both pedals.
+- **Combined axis**: idle shows brake and throttle at 50% (the shared axis
+  rests at `0x80`, so the HUD reads 127/127). Brake and throttle are not
+  independent.
+- **Separate axes (the working state)**: idle shows 0%/0%, brake byte 4
+  rests at `0xFF` and ramps to `0x00` fully pressed, throttle byte 5
+  independent. Verified on track: both pedals analog and independent.
 
 On the console use **PC switch position** so the interrupt endpoint answers
-(`044F:0xB655`), and do the toggle once if the brake byte stays `0xFF`.
-A PC host shows byte 4 live even in red mode, so do not use the PC as a
-reference for which mode the console needs.
+(`044F:0xB655`). If idle shows 50/50, or the brake byte never moves, press
+**both pedals + HOME** and repeat until idle is 0/0 and the pedals are
+independent — one cycle was needed on this wheel before the brake reported
+at all.
 
 - Pedals are inverted on the PC: `0xFF` means released. On the console the
   released value is `0x80`.
@@ -140,5 +140,5 @@ reference for which mode the console needs.
 - Buttons 9 and 10 (byte 1 bits 2 and 3) never changed. Unknown, probably absent
   on this wheel.
 - The console captures now separate the two pedals: in PC mode with the
-  wheel in green pedal mode, byte 4 is brake and byte 5 is throttle,
-  both verified by slow and quick presses.
+  wheel in separate pedal mode, byte 4 is brake and byte 5 is throttle,
+  both verified on track with independent idle 0/0.
