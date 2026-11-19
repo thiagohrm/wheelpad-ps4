@@ -84,9 +84,13 @@ The wheel speaks a Thrustmaster vendor protocol, not standard HID.
   vendor control read is used there.
 - What works is a vendor control IN request:
   `bmRequestType = 0xA1`, `bRequest = 0x01`, `wValue = 0x0000`,
-  `wIndex = interface`. It returns 27 bytes of live state.
+  `wIndex = interface`. It returns 27 bytes of live state in PS3 mode.
+  In PC mode the interrupt endpoint is preferred and this read is the
+  fallback.
 - A vendor OUT request `bmRequestType = 0x21`, `bRequest = 0x09`,
-  `wValue = 0x0250` with the payload `42 01 00 ...` is accepted.
+  `wValue = 0x0250` with the payload `42 01 00 ...` is accepted, but it is
+  **not sent in PC mode**: a real PC host never sends it, and the wheel
+  behaves correctly without it there.
 - `wValue = 0x0300` returns a different 8-byte reply
   (`21 26 01 03 00 00 00 00`).
 
@@ -99,21 +103,32 @@ The wheel speaks a Thrustmaster vendor protocol, not standard HID.
 
 The PS3 capture gives brake on byte 4 and throttle on byte 5, independently. The
 PC capture drove byte 5 for both pedals, so that run was in combined mode even
-though the wizard asked for separate. Console use targets PS3 mode.
+though the wizard asked for separate. Console use targets PC mode.
 
-## Analog pedal mode (combo)
+The combined/separate difference is the pedal-mode toggle described above, not
+a property of the switch position: either switch position can sit in either
+pedal mode.
 
-The PS3-mode report above has no working pedals: the wheel reports them as
-buttons 7 and 8, which never appear in the vendor reply. Pressing
-**paddle up + paddle down + D-pad up** on the wheel switches it into a
-PC-like mode whose vendor reply is 19 bytes and which reports the pedals as
-travel values at bytes 14 and 15 (`0x00` released, `0xFF` fully pressed).
-The plugin accepts both 27-byte and 19-byte replies, so the combo can be
-used in PS3 mode without changing the switch, or the switch can be set to
-PC.
+## Analog pedal mode (pedal-mode toggle)
 
-In this mode the buttons, hat and steering keep the same byte positions as
-the 19-byte PC layout, so the mapping layer is unchanged.
+The wheel has two pedal modes, toggled by a physical combo documented in the
+official manual:
+
+> Simultaneously press and release **both pedals + the HOME button**.
+> LED **red = separate** (independent axes), **green = combined**.
+
+- **Separate mode (red LED)**: brake on byte 4 (`0xFF` released, `0x00`
+  pressed), throttle on byte 5, full analog travel. This is the mode the
+  plugin expects.
+- **Combined mode (green LED)**: brake is absent from byte 4 (stays `0xFF`)
+  and only the combined axis moves. On the console the wheel was in this
+  mode for every early capture, which is why the brake looked dead while
+  the throttle worked.
+
+On the console use **PC switch position** so the interrupt endpoint answers
+(`044F:0xB655`), and do the toggle once per power-up if the brake byte stays
+`0xFF`. Verified live on the console: after the toggle, byte 4 ramps through
+its full range and the game receives analog L2/R2.
 
 - Pedals are inverted on the PC: `0xFF` means released. On the console the
   released value is `0x80`.
@@ -123,5 +138,6 @@ the 19-byte PC layout, so the mapping layer is unchanged.
   clockwise encoding until proven otherwise.
 - Buttons 9 and 10 (byte 1 bits 2 and 3) never changed. Unknown, probably absent
   on this wheel.
-- The console captures did not separate the two pedals, so the byte order
-  for brake and throttle on the console is not yet proven by measurement.
+- The console captures now separate the two pedals: in PC mode with the
+  wheel in separate pedal mode, byte 4 is brake and byte 5 is throttle,
+  both verified by slow and quick presses.

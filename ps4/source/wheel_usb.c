@@ -48,11 +48,14 @@ static volatile int g_running = 0;
 static volatile int g_have_report = 0;
 static volatile int g_available = 0;
 static volatile int g_logged_report = 0;
+static volatile int g_logged_interrupt = 0;
 static volatile int64_t g_last_report_ms = 0;
 static uint8_t g_report[VOLANTE_CONSOLE_REPORT_LEN];
 static int g_report_len = 0;
+static uint8_t g_in_endpoint = 0;
 static pthread_mutex_t g_lock = PTHREAD_MUTEX_INITIALIZER;
 static uint8_t g_interface_number = 0;
+static uint16_t g_product = 0;
 
 static int64_t now_ms(void)
 {
@@ -113,6 +116,50 @@ static void read_interface(libusb_device *device)
 }
 
 /*
+ * The live HID report arrives on the interrupt IN endpoint. The endpoint
+ * descriptor struct is not complete in this SDK, so the raw configuration
+ * descriptor is walked by hand to find the interrupt IN address.
+ */
+static uint8_t find_in_endpoint(void)
+{
+    uint8_t buffer[256];
+    int32_t length;
+    int32_t index;
+    int32_t total;
+    uint8_t endpoint = 0;
+
+    length = sceUsbdGetDescriptor(g_handle, 0x02, 0, buffer, (int32_t)sizeof(buffer));
+    if (length < 2) {
+        return 0;
+    }
+
+    total = buffer[2] | (buffer[3] << 8);
+    if (total > length) {
+        total = length;
+    }
+
+    index = 0;
+    while (index + 1 < total) {
+        int32_t descriptor_length = buffer[index];
+        uint8_t type;
+
+        if (descriptor_length < 2 || index + descriptor_length > total) {
+            break;
+        }
+        type = buffer[index + 1];
+
+        if (type == 0x05 && descriptor_length >= 7 &&
+            (buffer[index + 2] & 0x80) != 0 && buffer[index + 3] == 0x03) {
+            endpoint = buffer[index + 2];
+        }
+
+        index += descriptor_length;
+    }
+
+    return endpoint;
+}
+
+/*
  * Finds the wheel and opens it. The device address changes on every plug,
  * so it is matched by vendor and product id.
  */
@@ -140,6 +187,7 @@ static int open_wheel(void)
 
         STEP("[wheelpad] usb: found vid=%04x pid=%04x\n",
              (int)descriptor.idVendor, (int)descriptor.idProduct);
+        g_product = descriptor.idProduct;
         read_interface(list[index]);
 
         if (sceUsbdOpen(list[index], &g_handle) != 0 || g_handle == NULL) {
@@ -162,6 +210,10 @@ static int open_wheel(void)
         }
 
         STEP("[wheelpad] usb: claimed interface %d\n", (int)g_interface_number);
+        g_in_endpoint = find_in_endpoint();
+        if (g_in_endpoint != 0) {
+            STEP("[wheelpad] usb: interrupt endpoint 0x%02x\n", (int)g_in_endpoint);
+        }
         sceUsbdFreeDeviceList(list);
         return 0;
     }
@@ -301,14 +353,45 @@ static void *poll_thread(void *argument)
         if (g_handle == NULL) {
             if (open_wheel() == 0) {
                 g_available = 1;
-                send_init();
+                /*
+                 * The init OUT request is skipped in PC mode. A PC host
+                 * never sends it and the brake axis reports fine there,
+                 * while on the console it was sent and the brake byte
+                 * stayed dead, so it is the prime suspect for switching
+                 * the wheel into a pedal mode that suppresses the brake.
+                 */
+                if (g_product != VOLANTE_PID_PC) {
+                    send_init();
+                }
             } else {
                 sceKernelUsleep(500000);
                 continue;
             }
         }
 
-        length = read_state(buffer, (int32_t)sizeof(buffer));
+        /*
+         * The interrupt endpoint carries the live HID report, pedals
+         * included, whenever the console lets the transfer through. In the
+         * other mode it stalls, and the vendor control read is used instead.
+         */
+        length = 0;
+        if (g_in_endpoint != 0) {
+            int32_t transferred = 0;
+            int32_t result;
+
+            result = sceUsbdInterruptTransfer(g_handle, g_in_endpoint, buffer,
+                                              (int32_t)sizeof(buffer), &transferred, 50);
+            if (result == 0 && transferred > 0) {
+                length = transferred;
+                if (!g_logged_interrupt) {
+                    g_logged_interrupt = 1;
+                    STEP("[wheelpad] usb: reading live reports from the interrupt endpoint\n");
+                }
+            }
+        }
+        if (length == 0) {
+            length = read_state(buffer, (int32_t)sizeof(buffer));
+        }
         log_raw(buffer, (int32_t)length);
         if (is_state_frame_len(buffer, length)) {
             pthread_mutex_lock(&g_lock);
@@ -347,6 +430,7 @@ static void *poll_thread(void *argument)
                 g_have_report = 0;
                 g_available = 0;
                 g_logged_report = 0;
+                g_logged_interrupt = 0;
                 continue;
             }
 

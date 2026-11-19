@@ -110,10 +110,11 @@ int volante_parse_console(const uint8_t *data, size_t len, volante_report *out)
 
         out->hat = hat;
         out->steering = data[BYTE_STEERING];
-        /* In combo mode the pedals are travel values: 0 at rest, 0xFF fully
-         * pressed. The shared representation is the other way round. */
-        out->throttle = (uint8_t)(0xFFu - data[14]);
-        out->brake = (uint8_t)(0xFFu - data[15]);
+        /* In the 19 byte PC/combo report the pedals sit in bytes 4 and 5,
+         * the same place as the documented PC layout, and use the shared
+         * encoding already: 0xFF released, 0x00 fully pressed. */
+        out->brake = data[BYTE_BRAKE];
+        out->throttle = data[BYTE_THROTTLE];
         return 0;
     }
 

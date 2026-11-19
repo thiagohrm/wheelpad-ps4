@@ -115,6 +115,48 @@ int main(void)
         check(item->name, "pad.left_x", pad.left_x, item->steering);
     }
 
+    /* The 19 byte PC/combo report: pedals in bytes 4 and 5, 0xFF released,
+     * 0x00 fully pressed, the shared encoding already. */
+    {
+        struct {
+            const char *name;
+            uint8_t frame[19];
+            uint8_t steering;
+            uint8_t brake;
+            uint8_t throttle;
+        } combo[] = {
+            { "combo_idle",
+              { 0x00, 0xE0, 0xFF, 0x80, 0xFF, 0xFF, 0x80, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
+              0x80, 255, 255 },
+            { "combo_brake",
+              { 0x00, 0xE0, 0xFF, 0x80, 0x00, 0xFF, 0x80, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
+              0x80, 0, 255 },
+            { "combo_throttle",
+              { 0x00, 0xE0, 0xFF, 0x80, 0xFF, 0x30, 0x80, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
+              0x80, 255, 0x30 },
+        };
+        size_t combo_count = sizeof(combo) / sizeof(combo[0]);
+        size_t combo_index;
+
+        for (combo_index = 0; combo_index < combo_count; combo_index++) {
+            volante_report wheel;
+
+            memset(&wheel, 0, sizeof(wheel));
+            if (volante_parse_console(combo[combo_index].frame,
+                                      sizeof(combo[combo_index].frame), &wheel) != 0) {
+                printf("  FAIL  %s: parser rejected a valid frame\n", combo[combo_index].name);
+                failures++;
+                continue;
+            }
+            check(combo[combo_index].name, "steering", wheel.steering, combo[combo_index].steering);
+            check(combo[combo_index].name, "brake", wheel.brake, combo[combo_index].brake);
+            check(combo[combo_index].name, "throttle", wheel.throttle, combo[combo_index].throttle);
+        }
+    }
+
     /* A short frame must be refused. */
     {
         {
