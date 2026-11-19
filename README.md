@@ -1,79 +1,101 @@
-# volante
+# wheelpad
 
-Make an old Thrustmaster wheel work on an exploited PS4 (then PS5) by presenting
-it to games as a Logitech G29, in software only. No soldering, no USB adapter,
-no donor controller.
+Drive Assetto Corsa on an exploited PS4 with a Thrustmaster Ferrari Racing
+Wheel Red Legend Edition — in software only. The plugin reads the wheel
+directly over USB and injects it into the normal pad stream, so the game
+needs no patch and no adapter, soldering, or donor controller.
 
-Target wheel: Thrustmaster Ferrari Racing Wheel Red Legend Edition (PS3/PC, no
-force feedback).
+Tested on PS4 11.02 with GoldHEN 2.4b18.9, Assetto Corsa `CUSA01830` and
+`CUSA00001`.
 
-## Status
+## What works
 
-M0 — capture. Nothing runs on the console yet.
+| input | in game |
+|-------|---------|
+| steering | left stick X, full analog |
+| throttle | R2, full analog |
+| brake | L2, full analog |
+| D-pad | D-pad |
+| buttons 1-4 | square, cross, circle, triangle |
+| paddles | R1 / L1 (shift up / down) |
+| SE / ST / HOME | options / touch pad / L3 |
+
+Controller buttons and the vertical stick keep working, so menus stay
+usable with the pad in hand. If the wheel stops sending reports for 300 ms
+the merge stops, so a dead wheel cannot leave the car steering on its own.
 
 ## Install
 
-```
-python -m pip install --user hidapi
-```
+1. Upload `wheelpad.prx` to `/data/GoldHEN/plugins/` on the console (FTP
+   works; delete the old file first, the PS4 FTP server ignores
+   overwrites).
+2. Register it in `/data/GoldHEN/settings/plugins.ini`:
 
-Do not install the `hid` package. It is ctypes bindings that need a `hidapi.dll`
-they do not ship. The `hidapi` package installs the import module named `hid`
-and bundles the DLL.
+   ```ini
+   [wheelpad]
+   ; Assetto Corsa
+   CUSA01830=/data/GoldHEN/plugins/wheelpad.prx
+   CUSA00001=/data/GoldHEN/plugins/wheelpad.prx
+   ```
 
-## Guided capture
+3. Reboot the console, then launch the game.
 
-Run the wizard, pick the wheel configuration, and follow the prompts.
+## Usage
 
-```
-python tools/hid_capture.py
-```
+Set the wheel's mode switch to **PC** before plugging it in. That makes the
+wheel enumerate as `044F:0B655`, the identity the plugin prefers, and the
+one where the live interrupt reports (pedals included) are reachable.
 
-Four runs, one per configuration:
+One caveat inherited from the wheel itself: it has two pedal modes. If
+throttle and brake sit at 50% at idle, or the brake never registers, press
+**both pedals + the HOME button** at the same time and release. Repeat
+until idle reads 0%/0%. The mode is stable for the rest of the session.
 
-1. PC position, pedals separate (red LED)
-2. PC position, pedals combined (green LED)
-3. PS3 position, pedals separate (red LED)
-4. PS3 position, pedals combined (green LED)
-
-Each run writes `docs/captures/<timestamp>_<mode>.json` and a readable `.md`
-with the offsets each input touched.
-
-## Raw dump
-
-For ad-hoc inspection without prompts:
+## Build
 
 ```
-python tools/hid_dump.py --list
-python tools/hid_dump.py --dump
+powershell -ExecutionPolicy Bypass -File ps4\build.ps1
 ```
 
-## Layout
-
-```
-docs/PLAN.md          design, milestones, open questions
-docs/REPORTS.md       wheel input report layout, verified
-docs/MAPPING.md       wheel input to pad output mapping
-docs/captures/        capture output, written by the wizard
-src/report.h          parser interface, shared by plugin and host tests
-src/report.c          parser implementation
-tools/hid_capture.py  guided capture wizard
-tools/hid_dump.py     raw report dump
-tools/hid_probe.py    device and descriptor diagnostic
-tools/test_layout.py  validates the layout against captures
-tools/test_mapping.py validates the pad mapping against captures
-```
+The build needs `zig cc` (0.17.x) on PATH, or in the WinGet packages
+directory — `build.ps1` finds it in both places. Output:
+`build/ps4/wheelpad.prx`.
 
 ## Tests
 
 ```
-python tools/test_layout.py
-python tools/test_mapping.py
-powershell -ExecutionPolicy Bypass -File tests/run.ps1
+powershell -ExecutionPolicy Bypass -File tests\run.ps1
 ```
 
-The last one compiles `src/report.c` with `zig cc` and replays the real captured
-frames through it. `tests/run.ps1` finds zig on PATH or in the WinGet packages
-directory.
+Parses and maps replayed real frames from `docs/captures/`: report
+fixtures, mapping fixtures, console fixtures. The parser and mapping live
+in `src/`, shared between the plugin and the host tests, so there is a
+single implementation of the wheel layout.
 
+## How it works
 
+- `libSceUsbd.sprx` is loaded explicitly, then the wheel is found by
+  vendor id, the kernel HID driver is detached, and the interface claimed.
+- In PC mode the plugin polls the interrupt IN endpoint (`0x81`) for live
+  19-byte reports. In PS3 mode that endpoint stalls, so it falls back to
+  the wheel's vendor control read (`0xA1 0x01`), which returns a 27-byte
+  report. Phantom and echo replies are filtered by signature.
+- `scePadReadState` from `libScePad.sprx` is hooked (x64 detour behind the
+  exported thunk) and wheel state is merged into what the game reads.
+
+## Layout
+
+```
+ps4/          GoldHEN plugin: USB reader, pad hook, build script
+src/          shared parser and mapping, also used by host tests
+tests/        host test suites
+tools/        capture, klog, upload, and analysis helpers
+docs/         report layout, mapping, plan, captures
+```
+
+## Docs
+
+- `docs/REPORTS.md` — byte maps for both report flavours, verified on
+  hardware
+- `docs/MAPPING.md` — wheel input to pad output
+- `docs/PLAN.md` — design history and milestones

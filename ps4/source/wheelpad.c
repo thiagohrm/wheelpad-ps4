@@ -31,7 +31,7 @@
 attr_public const char *g_pluginName = "wheelpad";
 attr_public const char *g_pluginDesc = "Thrustmaster wheel to pad";
 attr_public const char *g_pluginAuth = "volante";
-attr_public uint32_t g_pluginVersion = 0x00000200; /* 2.00, reads the wheel on the console */
+attr_public uint32_t g_pluginVersion = 0x00000300; /* 3.00, analog pedals over the interrupt endpoint */
 
 /* The mapping layer repeats these numbers so host tests need no Orbis
  * headers. If one ever drifts, the build stops here instead of the game. */
