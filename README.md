@@ -32,11 +32,23 @@ the merge stops, so a dead wheel cannot leave the car steering on its own.
 2. Register it in `/data/GoldHEN/settings/plugins.ini`:
 
    ```ini
-   [wheelpad]
    ; Assetto Corsa
-   CUSA01830=/data/GoldHEN/plugins/wheelpad.prx
-   CUSA00001=/data/GoldHEN/plugins/wheelpad.prx
+   [CUSA01830]
+   /data/GoldHEN/plugins/wheelpad.prx
+
+   ; Assetto Corsa Competizione
+   [CUSA17266]
+   /data/GoldHEN/plugins/wheelpad.prx
+
+   ; Gran Turismo 7 (untested)
+   [CUSA24767]
+   /data/GoldHEN/plugins/wheelpad.prx
+   [CUSA24769]
+   /data/GoldHEN/plugins/wheelpad.prx
    ```
+
+   `tools/ps4_ini.py` edits the file over FTP and keeps a backup:
+   `python tools/ps4_ini.py add CUSA17266 /data/GoldHEN/plugins/wheelpad.prx`.
 
 3. Reboot the console, then launch the game.
 
