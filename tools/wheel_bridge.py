@@ -9,12 +9,13 @@ Install:
     python -m pip install --user hidapi
 
 Usage:
-    python tools/wheel_bridge.py --host 192.168.1.17
-    python tools/wheel_bridge.py --host 192.168.1.17 --replay docs/captures/20261118-190530_ps3_separate.json
+    python tools/wheel_bridge.py --host <ps4 address>
+    python tools/wheel_bridge.py --host <ps4 address> --replay docs/captures/20261118-190530_ps3_separate.json
 """
 
 import argparse
 import json
+import os
 import socket
 import struct
 import sys
@@ -138,7 +139,7 @@ def run_replay(args, sock):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--host", default="192.168.1.17", help="PS4 address")
+    parser.add_argument("--host", default=os.environ.get("WHEELPAD_HOST", ""), help="PS4 address")
     parser.add_argument("--port", type=int, default=DEFAULT_PORT)
     parser.add_argument("--replay", help="send the frames of a capture file instead of hardware")
     parser.add_argument("--hold", type=float, default=1.5, help="seconds per replayed frame")

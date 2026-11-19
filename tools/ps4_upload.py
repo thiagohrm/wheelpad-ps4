@@ -14,10 +14,12 @@ therefore on the decoded content, not on a byte-for-byte match.
 
 import argparse
 import hashlib
+import os
 import sys
 from ftplib import FTP
 
-HOST = "192.168.1.17"
+# The console address is not hardcoded: pass --host or set WHEELPAD_HOST.
+HOST = os.environ.get("WHEELPAD_HOST", "")
 PORT = 2121
 
 
@@ -28,6 +30,9 @@ def main():
     parser.add_argument("--host", default=HOST)
     parser.add_argument("--port", type=int, default=PORT)
     args = parser.parse_args()
+
+    if not args.host:
+        sys.exit("no host: pass --host or set WHEELPAD_HOST")
 
     with open(args.local, "rb") as handle:
         data = handle.read()

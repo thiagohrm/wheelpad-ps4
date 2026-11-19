@@ -10,16 +10,19 @@ previous content is written next to the file on first change.
 """
 
 import io
+import os
 import sys
 import time
 from ftplib import FTP
 
-HOST = "192.168.1.17"
+HOST = os.environ.get("WHEELPAD_HOST", "")
 PORT = 2121
 INI = "/data/GoldHEN/plugins.ini"
 
 
 def connect():
+    if not HOST:
+        sys.exit("no host: set WHEELPAD_HOST")
     ftp = FTP()
     ftp.encoding = "utf-8"
     ftp.connect(HOST, PORT, timeout=10)

@@ -12,6 +12,7 @@ Usage:
 """
 
 import argparse
+import os
 import re
 import socket
 import sys
@@ -21,12 +22,15 @@ from pathlib import Path
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("host", nargs="?", default="192.168.1.17")
+    parser.add_argument("host", nargs="?", default=os.environ.get("WHEELPAD_HOST", ""))
     parser.add_argument("--port", type=int, default=3232)
     parser.add_argument("--seconds", type=float, default=60.0, help="0 means until interrupted")
     parser.add_argument("--grep", help="regex of lines to print")
     parser.add_argument("--out", default="build/klog.log")
     args = parser.parse_args()
+
+    if not args.host:
+        sys.exit("no host: pass it as the first argument or set WHEELPAD_HOST")
 
     pattern = re.compile(args.grep, re.IGNORECASE) if args.grep else None
     out = Path(args.out)

@@ -49,9 +49,9 @@ Relevant button bits:
 | throttle (byte 5) | `analogButtons.r2` + `R2` bit | inverted, see formula |
 | paddle UP | `R1` | shift up |
 | paddle DOWN | `L1` | shift down |
-| button 1 | `CROSS` | |
-| button 2 | `CIRCLE` | |
-| button 3 | `SQUARE` | |
+| button 1 | `SQUARE` | follows the wheel's printed label |
+| button 2 | `CROSS` | |
+| button 3 | `CIRCLE` | |
 | button 4 | `TRIANGLE` | |
 | SE | `OPTIONS` | start |
 | ST | `TOUCH_PAD` | spare button, no dedicated share bit in this header |
@@ -93,17 +93,13 @@ Do not build a config system before the first working run.
 `steering`, `brake` and `throttle` update every frame. Buttons are edge-free:
 write the whole state each frame, do not accumulate.
 
-## Open question for M3
+## Open question for M3 — resolved
 
-`OrbisPadInformation.deviceClass` only defines `PAD`, `GUITAR`, `DRUMS`. No wheel
-class exists in the public header. A real G29 almost certainly reports `PAD`
-too, and games recognise wheels through a system-level device database, not
-through this struct.
-
-So a game may see our injected data as a pad, not a wheel. Two fallbacks if a
-game refuses wheel mode:
+`OrbisPadInformation.deviceClass` only defines `PAD`, `GUITAR`, `DRUMS`. No
+wheel class exists in the public header. It turned out not to matter: the
+game accepts the injected wheel state as pad input, so no wheel device
+class was ever presented. The fallbacks below stay here for any future
+game that refuses pad input:
 
 1. Map pedals to `leftStick.y` as well, so pad-style games still drive.
 2. Hook `scePadGetControllerInformation` to adjust what the game reads.
-
-Decide with data in M3. Do not pre-emptively detour.

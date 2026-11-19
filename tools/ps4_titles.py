@@ -7,13 +7,16 @@ Title names live in the system app.db, which needs SQLite access. This only
 lists the IDs, which is what plugins.ini sections need.
 """
 
+import os
 import sys
 from ftplib import FTP
 
 
 def main():
-    host = sys.argv[1] if len(sys.argv) > 1 else "192.168.1.17"
+    host = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("WHEELPAD_HOST", "")
     port = int(sys.argv[2]) if len(sys.argv) > 2 else 2121
+    if not host:
+        sys.exit("no host: pass it as the first argument or set WHEELPAD_HOST")
 
     ftp = FTP()
     ftp.connect(host, port, timeout=10)

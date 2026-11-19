@@ -1,12 +1,13 @@
 # Report layout — Thrustmaster Red Legend Edition (FGT Rumble 3-in-1 board)
 
-Two sources, one wheel:
+Two identities, one wheel:
 
-- **PC** (`0x044F:0xB655`): a 19-byte HID input report, read over the
-  interrupt endpoint. Captured in `docs/captures/`.
-- **PS4** (`0x044F:0xB658`): a 27-byte reply to a vendor control read.
-  The interrupt endpoint is not reachable from a plugin, because the
-  console's own HID driver owns the interface.
+- **PC switch position** (`0x044F:0xB655`): a 19-byte live HID input report,
+  read over the interrupt endpoint (`0x81`). This is the mode the plugin
+  uses. Captured in `docs/captures/`.
+- **PS3 switch position** (`0x044F:0xB658`): a 27-byte reply to a vendor
+  control read. The interrupt endpoint stalls there, and its pedal bytes
+  never move, so it is the fallback only.
 
 ## PC layout, 19 bytes
 
@@ -16,8 +17,8 @@ Two sources, one wheel:
 | 1 | buttons 7-11 | bit0 = SE, bit1 = ST, bit4 = HOME. Bits 5-7 read `0xE0`, mask them out |
 | 2 | hat switch | low nibble: 0=up, 2=right, 4=down, 6=left, `0x0F`=centred. High nibble drifts, mask it |
 | 3 | X | steering, 8-bit. `0x00` full left, `0x80` centre, `0xFF` full right |
-| 4 | Y | brake in PS3 mode. `0xFF` released, `0x00` fully pressed |
-| 5 | Rz | throttle in PS3 mode. `0xFF` released, `0x00` fully pressed |
+| 4 | Y | brake. `0xFF` released, `0x00` fully pressed |
+| 5 | Rz | throttle. `0xFF` released, `0x00` fully pressed |
 | 6 | constant | `0x80` |
 | 7 | vendor | `0xFF` while D-pad right, else `0x00` |
 | 8 | vendor | `0xFF` while D-pad left |
@@ -96,7 +97,7 @@ The wheel speaks a Thrustmaster vendor protocol, not standard HID.
 
 ## Mode differences
 
-Pedal reporting depends on the pedal-mode toggle (previous section), not on
+Pedal reporting depends on the pedal-mode toggle (next section), not on
 the switch position. The switch position only selects the USB identity and
 report size:
 
@@ -131,8 +132,10 @@ On the console use **PC switch position** so the interrupt endpoint answers
 independent — one cycle was needed on this wheel before the brake reported
 at all.
 
-- Pedals are inverted on the PC: `0xFF` means released. On the console the
-  released value is `0x80`.
+## Caveats
+
+- Pedals are inverted on the wire: `0xFF` means released. The PS3-mode
+  vendor reply instead rests at `0x80` and needs a rescale.
 - Steering centre is `0x80` but real hardware centre may sit a few counts off.
   Deadzone and calibration belong in the mapping layer, not the parser.
 - Hat values 1, 3, 5, 7 (diagonals) were not captured. Assume standard

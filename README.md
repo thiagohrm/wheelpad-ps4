@@ -93,6 +93,29 @@ tools/        capture, klog, upload, and analysis helpers
 docs/         report layout, mapping, plan, captures
 ```
 
+## License
+
+Code and documentation by Thiago Mattos, licensed **CC BY-NC-SA 4.0** — see
+`LICENSE`. In short: use it, modify it, share it; credit the author; no
+commercial use; share your adaptations under the same license. Components
+compiled in from the GoldHEN Plugin SDK remain under their own MIT license
+(see `THIRD-PARTY-NOTICES.md`).
+
+## Credits
+
+- [GoldHEN](https://github.com/GoldHEN) and the
+  [GoldHEN Plugin SDK](https://github.com/GoldHEN/GoldHEN_Plugins_SDK)
+  (MIT) — the detour engine and plugin glue compiled into the PRX, and the
+  loader itself.
+- [OpenOrbis PS4 Toolchain](https://github.com/OpenOrbis/OpenOrbis-PS4-Toolchain)
+  — Orbis headers and link stubs.
+- [OSM-Made / PS4-Notify](https://github.com/OSM-Made/PS4-Notify) — the
+  notification recipe used for the load banner.
+- [crucifix86 / xbox_controller_plugin](https://github.com/crucifix86/xbox_controller_plugin)
+  — working reference for `sceUsbd` + pad injection.
+
+Full license texts: `LICENSE` and `THIRD-PARTY-NOTICES.md`.
+
 ## Docs
 
 - `docs/REPORTS.md` — byte maps for both report flavours, verified on
